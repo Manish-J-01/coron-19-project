@@ -22,13 +22,11 @@ public class CoronaVirusDataService {
 
     private static String VIRUS_DATA_URL = "https://raw.githubusercontent.com/Manish-J-01/COVID-19/master/archived_data/archived_time_series/time_series_19-covid-Confirmed_archived_0325.csv";
 
-
     private List<LocationStats> allStats = new ArrayList<>();
 
     public List<LocationStats> getAllStats() {
         return allStats;
     }
-
     @PostConstruct
     @Scheduled(cron = "* * * 1 * *")
     public void fetchVirusData() throws IOException, InterruptedException {
@@ -49,14 +47,16 @@ public class CoronaVirusDataService {
             locationStat.setState(record.get("Province/State"));
             locationStat.setCountry(record.get("Country/Region"));
 
-           try {
-               int latestCases = Integer.parseInt(record.get(record.size() - 1));
-               locationStat.setLatestTotalCases(Integer.parseInt(record.get(record.size() - 1)));
-               // locationStat.setLatestTotalCases(latestCases);
-           }catch (NumberFormatException nfe) {
-               nfe.printStackTrace();
-           }
-            System.out.println(locationStat);
+            try {
+                 int latestCases = Integer.parseInt(record.get(record.size() - 1));
+                int prevDayCases = Integer.parseInt(record.get(record.size() - 2));
+                locationStat.setLatestTotalCases(latestCases);
+                // locationStat.setLatestTotalCases(latestCases);
+                locationStat.setDiffFromPrevDay(latestCases - prevDayCases);
+            } catch (NumberFormatException nfe){
+
+            }
+               System.out.println(locationStat);
             newStats.add(locationStat);
         }
         this.allStats = newStats;
